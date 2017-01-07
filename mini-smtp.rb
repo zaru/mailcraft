@@ -2,7 +2,9 @@ require 'mini-smtp-server'
 
 class StdoutSmtpServer < MiniSmtpServer
     def new_message_event(message_hash)
-        p message_hash
+        file = File.open('/tmp/smtp-log','a')
+        file.puts message_hash
+        file.close
     end
 end
 
