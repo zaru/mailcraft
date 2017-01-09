@@ -1,21 +1,51 @@
 require 'net/telnet'
+require 'resolv'
 
-cmd_lists = [
-"EHLO kaiha2.net",
-"MAIL FROM: <zaru@kaiha2.net>",
-"RCPT TO: <zarutofu@gmail.com>",
-"DATA",
-"Subject: hoge
-From: zaru@kaiha2.net
-To: zarutofu@gmail.com
-hogehoge
-hpipip
-.",
-"QUIT"
-]
 
-telnet = Net::Telnet.new("Host" => "gmail-smtp-in.l.google.com", "Port" => 25, "Timeout" => 20)
+class TelnetSendEmail
 
-cmd_lists.each do |cmd|
-  telnet.cmd({ "String" => cmd, "Match" => /^(250|354)/ }) { |c| print c }
+  def initialize(to: to, from: from, subject: subject, message: message)
+    @to = to
+    @to_domain = to.match(/@(.+)$/)[1]
+    @from = from
+    @from_domain = from.match(/@(.+)$/)[1]
+    @subject = subject
+    @message = message
+  end
+
+  def send_email
+    telnet = Net::Telnet.new("Host" => fetch_mail_server, "Port" => 25, "Timeout" => 20)
+    command_lists.each do |cmd|
+      telnet.cmd({ "String" => cmd, "Match" => /^(250|354)/ }) { |c| print c }
+    end
+  end
+
+  private
+
+  def fetch_mail_server
+    Resolv::DNS.new.getresources(@to_domain, Resolv::DNS::Resource::IN::MX).first.exchange.to_s
+  end
+
+  def command_lists
+    [
+      "EHLO #{@from_domain}",
+      "MAIL FROM: <#{@from}>",
+      "RCPT TO: <#{@to}>",
+      "DATA",
+      message_data,
+      "QUIT"
+    ]
+  end
+
+  def message_data
+    <<-EOM
+Subject: #{@subject}
+From: #{@from}
+To: #{@to}
+#{@message}
+
+.
+    EOM
+  end
+  
 end
