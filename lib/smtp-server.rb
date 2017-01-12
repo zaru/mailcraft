@@ -1,11 +1,15 @@
-require 'socket'
-require 'logger'
+require "socket"
+require "logger"
+require "redis"
 
 class SmtpServer
+
+  attr_reader :redis
 
   def initialize port: 25
     @gs = TCPServer.open port
     @logger = Logger.new STDOUT
+    @redis = Redis.new
   end
 
   def start
@@ -38,6 +42,7 @@ class SmtpServer
       @data_flag = false
       @from = ""
       @to = []
+      @to_domain = []
       @data = ""
     end
 
@@ -52,17 +57,19 @@ class SmtpServer
           @from = request.gsub(/^MAIL FROM:/i, '').strip
           return "250 OK"
         when /^RCPT TO:/i
-          @to << request.gsub(/^RCPT TO:/i, '').strip
+          #TODO: Complies with RFC 5322
+          @to << request.gsub(/^RCPT TO:/i, '').gsub(/<|>/, "").strip
+          @to_domain << request.gsub(/^RCPT TO:.+@/i, '').gsub(/<|>/, "").strip
           return "250 OK"
         when /^DATA/
           @data_flag = true
           return "354 Enter message, ending with \".\" on a line by itself"
       end
 
-      if @data_flag && request =~ /^\.$/
+      if @data_flag && request == "."
         @data_flag = false
         @server.receive_message message
-        return message
+        return nil
       end
 
       if @data_flag
@@ -73,26 +80,16 @@ class SmtpServer
       "500 ERROR"
     end
 
-    def receive_message
-      yield message
-    end
+    private
 
     def message
       {
         data: @data,
         from: @from,
-        to: @to
+        to: @to,
+        to_domain: @to_domain
       }
     end
 
   end
 end
-
-class MySmtpServer < SmtpServer
-  def receive_message(message)
-    p message
-  end
-end
-
-smtp = MySmtpServer.new port: 8888
-smtp.start

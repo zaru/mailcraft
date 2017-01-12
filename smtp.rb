@@ -1,50 +1,27 @@
-require 'socket'
-require 'logger'
+require "./lib/smtp-server.rb"
+require "./lib/telnet-send-email.rb"
+require "mail"
 
-port = 25
+class MySmtpServer < SmtpServer
+  def receive_message(message)
+    message[:to_domain].each do |domain|
+      transfer_email = @redis.hget(domain, "email")
 
-gs = TCPServer.open(port)
-addr = gs.addr
-addr.shift
+      mail = Mail.new(message[:data])
+      from = mail.to.first
+      subject = mail.subject
 
-logger = Logger.new(STDOUT)
-
-while true
-  Thread.start(gs.accept) do |socket|
-    socket.puts "220 smtp server ready"
-
-    data_flag = false
-
-    while buffer = socket.gets
-      request = buffer.upcase.chomp
-
-      if data_flag == true
-        if "." == request
-          socket.puts "250 ok"
-          data_flag = false
-        else
-          logger.debug(buffer)
-        end
+      if mail.multipart?
+        message = mail.parts.first.body.decoded
       else
-        case request
-
-          when 'DATA'
-            data_flag = true
-            socket.puts "354 ok"
-
-          when /^RCPT TO:/
-            socket.puts "250 ok"
-
-          when 'QUIT'
-            logger.debug("221")
-            socket.puts "221 bye"
-            s.close
-
-          else
-            logger.debug("250")
-            socket.puts "250 ok"
-        end
+        message = mail.body.decoded
       end
+
+      telnet = TelnetSendEmail.new(to: transfer_email, from: from, subject: subject, message: message)
+      telnet.send_email
     end
   end
 end
+
+smtp = MySmtpServer.new
+smtp.start

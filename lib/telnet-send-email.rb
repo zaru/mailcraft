@@ -1,10 +1,10 @@
-require 'net/telnet'
-require 'resolv'
+require "net/telnet"
+require "resolv"
 
 
 class TelnetSendEmail
 
-  def initialize(to: to, from: from, subject: subject, message: message)
+  def initialize to: , from: , subject: , message:
     @to = to
     @to_domain = to.match(/@(.+)$/)[1]
     @from = from
