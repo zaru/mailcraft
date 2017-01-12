@@ -7,9 +7,10 @@ However, it is under development 🙇
 ## Usage
 
 ```
-ruby smtp-controller.rb start
+sudo redir --lport=25 --cport=8888
+bundle exec ruby smtp.rb
+```
 
-tail -f /tmp/smtp-log
-
-ruby smtp-controller.rb stop
+```
+php -S 0.0.0.0:9999
 ```
