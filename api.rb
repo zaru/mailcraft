@@ -11,7 +11,7 @@ srv.mount_proc "/register" do |req, res|
   params = {}
   body = req.body.split("&")
   body.each do |line|
-    key, val = line.split("&")
+    key, val = line.split("=")
     params[key] = val
   end
 
