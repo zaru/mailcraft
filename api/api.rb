@@ -4,7 +4,7 @@ require "redis"
 srv = WEBrick::HTTPServer.new({
                                 DocumentRoot:   "./",
                                 BindAddress:    "0.0.0.0",
-                                Port:           8080,
+                                Port:           3000,
                               })
 
 srv.mount_proc "/register" do |req, res|
@@ -15,7 +15,7 @@ srv.mount_proc "/register" do |req, res|
     params[key] = val
   end
 
-  redis = Redis.new
+  redis = Redis.new host: "kvs"
   redis.hset(params["domain"], "email", params["email"])
   redis.hset(params["domain"], "webhook", params["webhook"])
 
