@@ -8,5 +8,13 @@ services:
       - "./api:/app"
     depends_on:
       - kvs
+  mail:
+    build: ./mail
+    ports:
+      - "25:25"
+    volumes:
+      - "./mail:/app"
+    depends_on:
+      - kvs
   kvs:
     build: ./redis

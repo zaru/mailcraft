@@ -9,7 +9,7 @@ class SmtpServer
   def initialize port: 25
     @gs = TCPServer.open port
     @logger = Logger.new STDOUT
-    @redis = Redis.new
+    @redis = Redis.new host: "kvs"
   end
 
   def start

@@ -38,5 +38,5 @@ class MySmtpServer < SmtpServer
   end
 end
 
-smtp = MySmtpServer.new port: 8888
+smtp = MySmtpServer.new port: 25
 smtp.start
