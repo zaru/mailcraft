@@ -17,6 +17,6 @@ ADD Gemfile.lock $APP_ROOT/Gemfile.lock
 RUN bundle install
 ADD . $APP_ROOT
 
-EXPOSE 3000:3000
+EXPOSE 4567:4567
 
-CMD ["bundle", "exec", "ruby", "api.rb"]
+CMD ["rackup", "-p", "4567", "-o", "0.0.0.0"]
