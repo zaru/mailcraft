@@ -8,7 +8,9 @@ WORKDIR $APP_ROOT
 #apt-getでtoolのインストール
 RUN apt-get update && \
         apt-get install -y nodejs && \
-        apt-get install -y vim
+        apt-get install -y vim && \
+        apt-get install -y redis-server
+RUN service redis-server stop
 
 ADD Gemfile $APP_ROOT/Gemfile
 ADD Gemfile.lock $APP_ROOT/Gemfile.lock
