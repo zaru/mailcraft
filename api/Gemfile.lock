@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     backports (3.6.8)
+    dotenv (2.2.0)
     multi_json (1.12.1)
     rack (1.6.5)
     rack-protection (1.5.3)
@@ -26,6 +27,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  dotenv
   redis
   sinatra
   sinatra-contrib

@@ -1,5 +1,6 @@
 require 'sinatra/base'
 require "redis"
+require 'dotenv/load'
 
 class MailCraftApi < Sinatra::Base
   set :bind, '0.0.0.0'
@@ -11,8 +12,8 @@ class MailCraftApi < Sinatra::Base
 
     body = "Add record to your DNS.\n"
     body += " - MX smtp.#{params["domain"]} 10\n"
-    body += " - smtp A 54.64.197.177\n"
-    body += " - TXT v=spf1 ip4:54.64.197.177/32 -all\n"
+    body += " - smtp A #{ENV["MAILCRAFT_IP"]}\n"
+    body += " - TXT v=spf1 ip4:#{ENV["MAILCRAFT_IP"]}/32 -all\n"
     body
   end
 end
