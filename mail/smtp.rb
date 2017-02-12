@@ -1,5 +1,6 @@
 require "./lib/smtp-server.rb"
 require "./lib/telnet-send-email.rb"
+require "./lib/mail_ignite.rb"
 require "mail"
 require "net/http"
 require "uri"
@@ -7,33 +8,9 @@ require "uri"
 class MySmtpServer < SmtpServer
   def receive_message(message)
     message[:to_domain].each do |domain|
-
-      mail = Mail.new(message[:data])
-      from = mail.to.first
-      subject = mail.subject
-      if mail.multipart?
-        message = mail.parts.first.body.decoded
-      else
-        message = mail.body.decoded
-      end
-
-      transfer_email = @redis.hget(domain, "email")
-      if transfer_email
-        telnet = TelnetSendEmail.new(to: transfer_email, from: from, subject: subject, message: message)
-        telnet.send_email
-      end
-
-
-      webhook = @redis.hget(domain, "webhook")
-      if webhook
-        Net::HTTP.post_form(URI.parse(webhook),
-                            {
-                              subject: subject,
-                              message: message
-                            }
-        )
-      end
-
+      mail_ignite = MailIgnite.new(domain domain, data: message[:data])
+      mail_ignite.transfer_email
+      mail_ignite.request_webhook
     end
   end
 end
